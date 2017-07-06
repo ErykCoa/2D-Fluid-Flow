@@ -1,0 +1,8 @@
+MapX : 200
+MapY : 150
+BaseSpringinessForce : 0.05
+ParticleRadius : 1
+Contrast : 5
+UnitsPerSecond : 0.2
+ScaleX : 1.5
+ScaleY : 1.5

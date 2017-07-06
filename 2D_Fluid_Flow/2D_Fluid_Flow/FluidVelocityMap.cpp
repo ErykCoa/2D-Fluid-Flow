@@ -9,16 +9,12 @@ void FluidVelocityMap::FillUnoccupiedFields()
 	for (int X = 0; X < WinSettings.Info.MapX; X += WinSettings.ParticleRadius * 2.f)
 		for (int Y = 0; Y < WinSettings.Info.MapY; Y += WinSettings.ParticleRadius * 2.f)
 			if (!IsFieldOccupied[X][Y])
-			{
-				
 				Particles[X][Y].push_back(
-					std::move(Particle(
-						WinSettings,
+					Spawner.SpawnNew(
 						{ X + 0.5f, Y + 0.5f }, Boundaries<float>{ (float)X, X + 1.f, (float)Y, Y + 1.f }, PositionDis,
 						{ 0.f, 0.f }, Boundaries<float>{ -0.01f, 0.01f, -0.01f, 0.01f }, VolacityDis
-					)));					
-					//std::move(Particle{ WinSettings,{ X + 0.5f, Y + 0.5f },{ 0,0 } })
-			}
+					)
+				);					
 }
 
 void FluidVelocityMap::MovementTick()
@@ -71,11 +67,10 @@ void FluidVelocityMap::MapBasicParticles()
 {
 //	static unsigned long long Counter = 0;
 
-	for (unsigned i = 20; i; --i)
+	for (int i = 5; i > 0; --i)
 	{
-		auto P = Spawner.SpawnNew();
+		Particle P = Spawner.SpawnNew();
 
-		++WinSettings.ParticlesCounter;
 		Particles[0][P.Position.x].push_back(P);
 		
 	}

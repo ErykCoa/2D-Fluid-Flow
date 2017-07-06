@@ -16,7 +16,7 @@ void IObject::UpdateHitBox()
 	{
 		auto Number = std::distance(Begin, Iter);
 
-		sf::Vector2u Index{ Number % HitBoxX , Number / HitBoxX };
+		sf::Vector2u Index{ static_cast<unsigned>(Number % HitBoxX) ,  static_cast<unsigned>(Number / HitBoxX) };
 
 		auto Pixel = (sf::Uint8*)Iter;
 

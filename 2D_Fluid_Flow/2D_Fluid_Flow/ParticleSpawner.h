@@ -12,8 +12,11 @@ class ParticleSpawner
 {
 public:
 	Particle SpawnNew();
+	Particle SpawnNew(
+		sf::Vector2f StartingPosition, Boundaries<float> & PositionBoun, std::normal_distribution<float> & PositionDis,
+		sf::Vector2f StartingVolacity, Boundaries<float> & VolacityBoun, std::normal_distribution<float> & VolacityDis);
+	
 	void AddNewSpawningBox(SpawningBox & SpawningBox);
-
 	void FindAndEraseSpawningBox(sf::Vector2u & Position);
 
 	ParticleSpawner(Settings & WinSettings);

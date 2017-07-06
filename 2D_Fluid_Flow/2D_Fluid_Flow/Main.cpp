@@ -9,7 +9,7 @@
 int main()
 {
 	try {
-		std::unique_ptr<PipeMap> Map{ new PipeMap("example") };
+		std::unique_ptr<PipeMap> Map{ new PipeMap("example3") };
 
 		while (!Map->WindowHasBeenClosed())
 		{

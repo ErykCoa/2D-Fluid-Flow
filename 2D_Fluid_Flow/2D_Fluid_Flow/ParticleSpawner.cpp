@@ -21,6 +21,8 @@ Particle ParticleSpawner::SpawnNew()
 
 		if (RandomNum <= 0)
 		{
+			++WinSettings.ParticlesCounter;
+
 			return Particle(
 				WinSettings,
 				{ stde::Trim(Item.PositionXDis(Engine), Item.Field.left, Item.Field.left + Item.Field.width),
@@ -30,6 +32,21 @@ Particle ParticleSpawner::SpawnNew()
 		}
 	}
 }
+
+Particle ParticleSpawner::SpawnNew(sf::Vector2f StartingPosition, Boundaries<float>& PositionBoun, std::normal_distribution<float>& PositionDis, sf::Vector2f StartingVolacity, Boundaries<float>& VolacityBoun, std::normal_distribution<float>& VolacityDis)
+{
+	auto Position = stde::Trim(sf::Vector2f{ StartingPosition.x + PositionDis(Engine), StartingPosition.y + PositionDis(Engine) }, PositionBoun);
+	auto Velocity = stde::Trim(sf::Vector2f{ StartingVolacity.x + VolacityDis(Engine), StartingVolacity.y + VolacityDis(Engine) }, VolacityBoun);
+
+	++WinSettings.ParticlesCounter;
+
+	return Particle(
+		WinSettings,
+		Position,
+		Velocity
+	);
+}
+
 
 void ParticleSpawner::AddNewSpawningBox(SpawningBox & SpawningBox)
 {

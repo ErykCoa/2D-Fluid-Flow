@@ -29,17 +29,17 @@ public:
 	sf::Vector2f BoundryY;
 
 	Particle(Settings & WinSettings, sf::Vector2f StartingPosition, sf::Vector2f StartingVelocity);
-	Particle(
+	/*Particle(
 		Settings & WinSettings,
 		sf::Vector2f StartingPosition, Boundaries<float> & PositionBoun, std::normal_distribution<float> & PositionDis,
 		sf::Vector2f StartingVolacity, Boundaries<float> & VolacityBoun, std::normal_distribution<float> & VolacityDis
-	);
+	);*/
 	~Particle();
 
 private:
 	Settings & WinSettings;
 
-	static std::default_random_engine Engine;
+//	static std::default_random_engine Engine;
 
 	void UpdateCircle(sf::Vector2f Scale, float Contrast);
 

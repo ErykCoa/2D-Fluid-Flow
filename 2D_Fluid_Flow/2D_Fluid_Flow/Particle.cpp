@@ -1,6 +1,6 @@
 #include "Particle.h"
 
-std::default_random_engine Particle::Engine{};
+//std::default_random_engine Particle::Engine{};
 
 void Particle::Collide(Particle & Particle)
 {
@@ -122,7 +122,7 @@ Particle::Particle(Settings & WinSettings, sf::Vector2f StartingPosition, sf::Ve
 	Circle = sf::CircleShape(WinSettings.ParticleRadius);
 }
 
-Particle::Particle(Settings & WinSettings, 
+/*Particle::Particle(Settings & WinSettings, 
 	sf::Vector2f StartingPosition, Boundaries<float>& PositionBoun, std::normal_distribution<float>& PositionDis, 
 	sf::Vector2f StartingVolacity, Boundaries<float>& VolacityBoun, std::normal_distribution<float>& VolacityDis) :
 	WinSettings{ WinSettings }
@@ -133,7 +133,7 @@ Particle::Particle(Settings & WinSettings,
 	 Velocity = NextVelocity = stde::Trim(sf::Vector2f{ StartingVolacity.x + VolacityDis(Engine), StartingVolacity.y + VolacityDis(Engine) }, VolacityBoun);
 
 	Circle = sf::CircleShape(WinSettings.ParticleRadius);
-}
+}*/
 
 
 Particle::~Particle()
