@@ -7,35 +7,29 @@ void FluidVelocityMap::FillUnoccupiedFields()
 	std::normal_distribution<float> VolacityDis{0.f, 0.05f};
 
 	for (int X = 0; X < WinSettings.Info.MapX; X += WinSettings.ParticleRadius * 2.f)
+	{
 		for (int Y = 0; Y < WinSettings.Info.MapY; Y += WinSettings.ParticleRadius * 2.f)
+		{
 			if (!IsFieldOccupied[X][Y])
 			{
-				
-				Particles[X][Y].push_back(
-					std::move(Particle(
-						WinSettings,
-						{ X + 0.5f, Y + 0.5f }, Boundaries<float>{ (float)X, X + 1.f, (float)Y, Y + 1.f }, PositionDis,
-						{ 0.f, 0.f }, Boundaries<float>{ -0.01f, 0.01f, -0.01f, 0.01f }, VolacityDis
-					)));					
-					//std::move(Particle{ WinSettings,{ X + 0.5f, Y + 0.5f },{ 0,0 } })
+				auto P = 
+				Spawner.SpawnNew(
+				{ X + 0.5f, Y + 0.5f }, Boundaries<float>{ (float)X + 0.01f, X + 0.99f, (float)Y + 0.01f, Y + 0.99f }, PositionDis,
+				{ 0.f, 0.f }, Boundaries<float>{ -0.01f, 0.01f, -0.01f, 0.01f }, VolacityDis
+				);
+
+				Particles[P.Position.x][P.Position.y].push_back(P);
 			}
+		}
+	}
 }
 
 void FluidVelocityMap::MovementTick()
 {
-	UpdatePaths();
-
-	for (auto& Path : NotOccupiedPaths[0])
-	{
-		Spawner.AddNewSpawningBox(
-			SpawningBox(sf::Rect<unsigned>(0, Path.first, 1, Path.second - Path.first - 2), 1.f, FlowInitialSpeed)
-		);
-	}
-
 	MapBasicParticles();
 }
 
-void FluidVelocityMap::Draw(sf::RenderWindow & Window)
+void FluidVelocityMap::Draw(sf::RenderTarget & Window)
 {
 	switch (WinSettings.RenderType)
 	{
@@ -43,18 +37,21 @@ void FluidVelocityMap::Draw(sf::RenderWindow & Window)
 		CirclesRender(Window);
 		break;
 	case RenderType::Regular:
-		RegularRender(Window);		
+		RegularRender(Window);
 		break;
-	default: 
+	default:
 		break;
 	}
+
+	HasBeenRendered.store(true);
+
 }
 
 
 FluidVelocityMap::FluidVelocityMap(Settings & WinSettings) :
-	FlowInitialSpeed{ 38.f, 0.f },
+	FlowInitialSpeed{ 10000.f, 0.f },
 	WinSettings{ WinSettings },
-	Particles( WinSettings.Info.MapX, std::vector<std::vector<Particle>>(WinSettings.Info.MapY) ),
+	Particles(WinSettings.Info.MapX, std::vector<std::vector<Particle>>(WinSettings.Info.MapY)),
 	NextParticles(WinSettings.Info.MapX, std::vector<std::vector<Particle>>(WinSettings.Info.MapY)),
 	NotOccupiedPaths(WinSettings.Info.MapX),
 	IsFieldOccupied( WinSettings.Info.MapX, std::vector<bool>(WinSettings.Info.MapY) ),
@@ -63,51 +60,35 @@ FluidVelocityMap::FluidVelocityMap(Settings & WinSettings) :
 	Map(WinSettings.Info.MapX, std::vector<sf::Vector2f>(WinSettings.Info.MapY)),
 	Spawner(WinSettings)
 {
+	for (int X = 0; X < WinSettings.Info.MapX; ++X)
+		for (int Y = 0; Y < WinSettings.Info.MapY; ++Y)
+		{
+			Particles[X][Y].reserve(5);
+			NextParticles[X][Y].reserve(5);
+		}
 	
+
+	Spawner.SetCondition([&](sf::Vector2f & Position) {return !IsFieldOccupied[Position.x][Position.y]; });
+	Spawner.SetMaxParticlesPerSecond(0);
+
+	//WinSettings.Overlay.AddItem("TickDuration", [&]() {return TickDuration.GetString(); });
+	WinSettings.Objects->Attach(*this);
+
+	UpdatePaths();
+
+	WinSettings.FluidMap = this;
 }
 
 
 void FluidVelocityMap::MapBasicParticles()
 {
+	auto Lock = TickDuration.MeasureTime();
 //	static unsigned long long Counter = 0;
-
-	for (unsigned i = 20; i; --i)
-	{
-		auto P = Spawner.SpawnNew();
-
-		++WinSettings.ParticlesCounter;
-		Particles[0][P.Position.x].push_back(P);
-		
-	}
 	
 
-	/*	if (Counter++ < 200)
-	{
-
-		std::normal_distribution<float> PositionDis{ 0.f, 0.2f };
-		std::normal_distribution<float> VolacityDis{ 0.f, 0.05f };
-
-		for (int Field = 0; Field < WinSettings.Info.MapY; Field+=2)
-			if(!IsFieldOccupied[0][Field] && !IsFieldOccupied[1][Field + 1] && !IsFieldOccupied[1][Field - 1])
-			{
-				//if (!Particles[0][Field].size())
-					//Particles[0][Field].push_back({WinSettings, {0.5f, Field + 0.5f}, FlowInitialSpeed });
-				//	++WinSettings.ParticlesCounter;
-
-					Particles[0][Field].push_back(
-						std::move(Particle(
-							WinSettings,
-							{ 0.5f, Field + 0.5f }, 
-							Boundaries<float>{ 0.f, 1.f, (float)Field, Field + 1.f }, PositionDis,
-							FlowInitialSpeed, 
-							Boundaries<float>{ FlowInitialSpeed.x * 0.7f, FlowInitialSpeed.x * 1.3f, FlowInitialSpeed.y * 0.7f, FlowInitialSpeed.y * 1.3f }, VolacityDis
-						)));
-				
-			}
-			
-
-
-	}*/
+	for (auto & P : Spawner.SpawnParticlesTick())
+		Particles[P.Position.x][P.Position.y].push_back(P);		
+	
 
 	stde::For_each<NumberOfThreadsRunning>(Particles.begin(), Particles.end(), [&](decltype(Particles.begin()) Iter)
 	{
@@ -115,7 +96,6 @@ void FluidVelocityMap::MapBasicParticles()
 
 		for (int Y = 0; Y < WinSettings.Info.MapY; ++Y)
 		{
-			//if (IsFieldOccupied[x][Y]) continue; // +10%
 			for (auto& Item : Iter->data()[Y])
 			{
 				Item.Move();
@@ -128,8 +108,6 @@ void FluidVelocityMap::MapBasicParticles()
 
 							Item.Collide(With);
 						}
-
-
 
 				Item.Collide(IsFieldOccupied);
 
@@ -153,7 +131,7 @@ void FluidVelocityMap::MapBasicParticles()
 					--WinSettings.ParticlesCounter;
 					continue;
 				}
-				
+
 
 				std::lock_guard<std::mutex> _lock(MutArray[stde::Trim(Item.Position.x, 0, WinSettings.Info.MapX - 1)]);
 				NextParticles[stde::Trim(Item.Position.x, 0, WinSettings.Info.MapX - 1)][stde::Trim(Item.Position.y, 0, WinSettings.Info.MapY - 1)].push_back(Item);
@@ -162,17 +140,20 @@ void FluidVelocityMap::MapBasicParticles()
 		}
 	});
 
-	
+
 	Particles.swap(NextParticles);
 
 
 }
 
-void FluidVelocityMap::RegularRender(sf::RenderWindow & Window)
+void FluidVelocityMap::RegularRender(sf::RenderTarget & Window)
 {
+	SpeedValueImage.create(WinSettings.Info.MapX, WinSettings.Info.MapY, sf::Color::Black);
+
 	stde::For_each<NumberOfThreadsRunning>(Particles.begin(), Particles.end(), [&](decltype(Particles.begin()) Iter)
 	{
 		auto x = std::distance(Particles.begin(), Iter);
+		auto NormalizeWith = 127.5f / WinSettings.CurrentGreatestVolicity;
 
 		for (int Y = 0; Y < WinSettings.Info.MapY; ++Y)
 		{
@@ -181,10 +162,24 @@ void FluidVelocityMap::RegularRender(sf::RenderWindow & Window)
 			{
 				Map[x][Y] += Item.Velocity;
 			}
+
+			
+			unsigned tmpx = stde::Trim(127.5f - Map[x][Y].x*NormalizeWith*WinSettings.Contrast, 0, 255);
+			unsigned tmpy = stde::Trim(127.5f - Map[x][Y].y*NormalizeWith*WinSettings.Contrast, 0, 255);
+
+			//if (Map[x][y].x < 0) tmp = 0;
+
+			sf::Color Color(
+				std::abs(127.5f - tmpx),
+				255 - std::abs(0.f + tmpy + tmpx),
+				std::abs(127.5f - tmpy)
+			);
+
+			SpeedValueImage.setPixel(x, Y, Color);
 		}
 	});
 
-	stde::For_each<NumberOfThreadsRunning>(Particles.begin(), Particles.end(), [&](decltype(Particles.begin()) Iter)
+	/*stde::For_each<NumberOfThreadsRunning>(Particles.begin(), Particles.end(), [&](decltype(Particles.begin()) Iter)
 	{
 		auto x = std::distance(Particles.begin(), Iter);
 
@@ -207,25 +202,25 @@ void FluidVelocityMap::RegularRender(sf::RenderWindow & Window)
 
 
 		}
-	});
+	});*/
 
-	UpdateSpeedValueImage();
+	//UpdateSpeedValueImage();
 
-	sf::Texture Texture{};
+	
 
-	Texture.setSmooth(true);
+	SpeedValueTexture.setSmooth(true);
 
 
-	Texture.loadFromImage(SpeedValueImage);
+	SpeedValueTexture.loadFromImage(SpeedValueImage);
 
-	SpeedValueSprite.setTexture(Texture, true);
+	SpeedValueSprite.setTexture(SpeedValueTexture, true);
 
 	SpeedValueSprite.setScale(WinSettings.Info.Scale);
 
 	Window.draw(SpeedValueSprite);
 }
 
-void FluidVelocityMap::CirclesRender(sf::RenderWindow & Window)
+void FluidVelocityMap::CirclesRender(sf::RenderTarget & Window)
 {
 	for (int X = 0; X < WinSettings.Info.MapX; ++X)
 		for (int Y = 0; Y < WinSettings.Info.MapY; ++Y)
@@ -274,15 +269,17 @@ void FluidVelocityMap::UpdateSpeedValueImage()
 
 		for (auto Boundry : NotOccupiedPaths[x])
 			for (unsigned y = Boundry.first; y < Boundry.second; ++y)
-				{				 
-					unsigned tmp = stde::Trim(abs(Map[x][y].x)*WinSettings.Contrast,0,255);
+				{			
+					auto NormalizeWith = 127.5f / WinSettings.CurrentGreatestVolicity;
+					unsigned tmpx = stde::Trim(127.5f - Map[x][y].x*NormalizeWith*WinSettings.Contrast, 0, 255);
+					unsigned tmpy = stde::Trim(127.5f - Map[x][y].x*NormalizeWith*WinSettings.Contrast, 0, 255);
 
-					if (Map[x][y].x < 0) tmp = 0;
+					//if (Map[x][y].x < 0) tmp = 0;
 
 					sf::Color Color(
-						tmp,
-						0,
-						255 - tmp
+						std::abs(127.5f - tmpx),
+						255 - std::abs(0.f + tmpy + tmpx),
+						std::abs(127.5f - tmpy)
 						);
 
 					SpeedValueImage.setPixel(x, y, Color);
@@ -298,4 +295,21 @@ unsigned FluidVelocityMap::NotOccupiedFields(const unsigned Column)
 		Res += Boundry.second - Boundry.first;
 
 	return Res;
+}
+
+void FluidVelocityMap::Update(IObject *& State)
+{
+	if (State && State->IsStatic())
+	{
+		for (auto& Field : State->OccupiedFields)
+			if (Field.Point.x < IsFieldOccupied.size() && Field.Point.y < IsFieldOccupied[Field.Point.x].size())
+				IsFieldOccupiedStaticly[Field.Point.x][Field.Point.y] = false;
+
+		for (auto& Object : WinSettings.Objects->Objects)
+			if (Object.get() != State)
+				for (auto& Field : Object->OccupiedFields)
+					if (Field.Point.x < IsFieldOccupied.size() && Field.Point.y < IsFieldOccupied[Field.Point.x].size())
+						IsFieldOccupiedStaticly[Field.Point.x][Field.Point.y] = true;
+
+	}
 }

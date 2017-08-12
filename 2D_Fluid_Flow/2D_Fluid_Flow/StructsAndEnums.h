@@ -5,6 +5,8 @@
 #include <map>
 #include <string>
 #include <random>
+#include <set>
+#include "CommandID.h"
 
 
 enum class ID {
@@ -15,6 +17,35 @@ enum class RenderType {
 	None,
 	Regular,
 	Circles
+};
+
+enum class CommandsSet {
+	MapLoading,
+	Default
+};
+
+enum class CommandStatus {
+	Completed,
+	Pending,
+	Failed
+};
+
+enum class VisabilityType {
+	Default,
+	Hidden,
+	Visible,
+	Selected
+};
+
+enum class BorderType {
+	Normal,
+	Bouncy
+};
+
+enum class PipeMapState {
+	Running,
+	Quit,
+	LoadNewMap
 };
 
 struct OccupiedField {
@@ -38,33 +69,14 @@ struct Boundaries
 };
 
 struct CommandInfo {
-	std::function<void(std::string)> Function;
-	std::map<char, std::function<void()>> AdditionalParametrs;
+	CommandID ID;
+	std::function<CommandStatus(std::string, std::set<char> )> Function;
 	std::string Help;
 	std::string MoreHelp;
-};
 
-struct SpawningBox {
-	sf::Rect<unsigned> Field;
-
-	float Thickness;
-	sf::Vector2f StartingVolacity;
-	std::normal_distribution<float> PositionXDis;
-	std::normal_distribution<float> PositionYDis;
-	std::normal_distribution<float> VolacityXDis;
-	std::normal_distribution<float> VolacityYDis;
-
-
-	SpawningBox(sf::Rect<unsigned> Field, float Thickness, sf::Vector2f & StartingVolacity):
-		Field(Field),
-		Thickness(Thickness),
-		StartingVolacity(StartingVolacity),
-		PositionXDis(Field.left + Field.width / 2.f, Field.width / 5.f),
-		PositionYDis(Field.top + Field.height / 2.f, Field.height / 5.f),
-		VolacityXDis(StartingVolacity.x, fabs(StartingVolacity.x) * 0.1f + 0.01f),
-		VolacityYDis(StartingVolacity.y, fabs(StartingVolacity.y) * 0.1f + 0.01f)
+	bool operator<(const CommandInfo & With) const
 	{
+		return ID < With.ID;
 	}
 };
-
 

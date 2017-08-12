@@ -17,7 +17,7 @@ public:
 	void Collide(std::vector<std::vector<bool>> & IsFieldOccupied);
 	void CollideWithBorders();
 	void Move();
-	void Draw(sf::RenderWindow & Window);
+	void Draw(sf::RenderTarget & Window);
 	bool HasLeftMap();
 
 	void Update();
@@ -29,24 +29,23 @@ public:
 	sf::Vector2f BoundryY;
 
 	Particle(Settings & WinSettings, sf::Vector2f StartingPosition, sf::Vector2f StartingVelocity);
-	Particle(
+	/*Particle(
 		Settings & WinSettings,
 		sf::Vector2f StartingPosition, Boundaries<float> & PositionBoun, std::normal_distribution<float> & PositionDis,
 		sf::Vector2f StartingVolacity, Boundaries<float> & VolacityBoun, std::normal_distribution<float> & VolacityDis
-	);
-	~Particle();
+	);*/
 
 private:
 	Settings & WinSettings;
 
-	static std::default_random_engine Engine;
+//	static std::default_random_engine Engine;
 
 	void UpdateCircle(sf::Vector2f Scale, float Contrast);
 
 	inline void SolidColision(sf::Vector2f & With);
 	inline void SpringlikeColision(sf::Vector2f & With);
 
-	sf::CircleShape Circle;
+	//sf::CircleShape Circle;
 
 	sf::Vector2f NextPosition;
 	sf::Vector2f NextVelocity;

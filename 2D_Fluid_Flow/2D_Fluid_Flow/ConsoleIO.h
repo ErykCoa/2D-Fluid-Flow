@@ -18,6 +18,8 @@ public:
 
 	void Write(std::string & str);
 
+	//void CleanBuffer();
+
 	ConsoleIO();
 	~ConsoleIO();
 private:

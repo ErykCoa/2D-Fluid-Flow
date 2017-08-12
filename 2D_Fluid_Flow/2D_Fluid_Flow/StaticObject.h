@@ -9,11 +9,11 @@
 class StaticObject : public IObject
 {
 public:
-	StaticObject(Settings & WinSettings, const std::string & Path);
+	StaticObject(WindowInfo & Info, const std::string & Path);
 	~StaticObject();
 
 	virtual bool IsStatic() override;
 	virtual void Move() override;
-	virtual void Draw(sf::RenderWindow & Window) override;
+	virtual void Draw(sf::RenderTarget & Window) override;
 };
 

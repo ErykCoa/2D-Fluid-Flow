@@ -15,4 +15,5 @@ constexpr char DictionarySeparator = ':';
 constexpr unsigned ConsoleInputOffset = 3;
 
 constexpr unsigned NumberOfThreadsRunning = 8;
+
 //constexpr unsigned MaxIterationsForLinearExecution = 1000;

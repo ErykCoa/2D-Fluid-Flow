@@ -1,8 +1,8 @@
 #include "StaticObject.h"
 
 
-StaticObject::StaticObject(Settings & WinSettings, const std::string & Path) :
-	IObject(WinSettings)
+StaticObject::StaticObject(WindowInfo & Info, const std::string & Path) :
+	IObject(Info)
 {
 	LoadSpritePosition(Path);
 	LoadTexture(Path);
@@ -24,8 +24,18 @@ void StaticObject::Move()
 	throw std::logic_error("Object is static!");
 }
 
-void StaticObject::Draw(sf::RenderWindow & Window)
+void StaticObject::Draw(sf::RenderTarget & Window)
 {
-	Sprite.setScale(WinSettings.Info.Scale);
-//	Window.draw(Sprite);
+	Sprite.setPosition(sf::Vector2f(AbsolutePosition.x * Info.Scale.x, AbsolutePosition.y * Info.Scale.y));
+	Sprite.setScale(Info.Scale);
+
+	switch (CurrentVisability)
+	{
+	case VisabilityType::Default:
+	case VisabilityType::Visible:
+	case VisabilityType::Selected: Window.draw(Sprite); break;
+	default: break;
+	}
 }
+
+

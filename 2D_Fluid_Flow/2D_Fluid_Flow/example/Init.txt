@@ -1,0 +1,7 @@
+//Print "This is a basic example"
+FPS
+Print "This is a basic example"
+ParticlesCount
+//AddSpawner "1,5,5,400,200,800,600"
+PerSec 10
+//FillMap

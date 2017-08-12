@@ -6,14 +6,19 @@
 #include "WindowInfo.h"
 #include "stde.h"
 #include "Consts.h"
+#include <functional>
+#include "WindowViewChanger.h"
 
 class Overlay
 {
 public:
-	void UpdateAndDraw(sf::RenderWindow & Window);
+	void UpdateAndDraw(sf::RenderTarget & Window);
 
 	void AddItem(std::string Name, std::function<std::string()> Func);
 	void RemoveItem(std::string Name);
+
+	void AddDrawableItem(sf::Drawable & Item);
+	void RemoveDrawableItem(sf::Drawable & Item);
 
 	void SetVisability(bool Visible);
 	bool GetVisability();
@@ -24,16 +29,21 @@ public:
 
 	void ChangeFontStyle(sf::Text::Style Style);
 
-	Overlay(WindowInfo & Info);
+	Overlay(WindowInfo & Info, WindowViewChanger & View);
 private:
-	void Draw(sf::RenderWindow & Window);
+	WindowViewChanger & View;
+	void Draw(sf::RenderTarget  & Window);
 	void Update();
 
 	WindowInfo & Info;
 
 	bool Visible;
 
+
 	std::map<std::string, std::function<std::string()>> UIElements;
+
+	using DrawableRef = typename std::reference_wrapper<sf::Drawable>;
+	std::set<DrawableRef, stde::CompereAddresses<DrawableRef>> AdditionalDrawableItems;
 
 	sf::Text Text;
 	sf::Font Font;

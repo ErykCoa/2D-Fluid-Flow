@@ -1,0 +1,3 @@
+IsStatic : 1
+PositionX : 200
+PositionY : 100

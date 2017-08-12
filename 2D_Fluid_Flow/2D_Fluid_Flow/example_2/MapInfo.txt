@@ -1,0 +1,13 @@
+MapX : 400
+MapY : 300
+BaseSpringinessForce : 0.00004
+ParticleRadius : 1
+Contrast : 2
+UnitsPerSecond : 1
+ScaleX : 2
+ScaleY : 2
+TimeUnitsPerFrame : 1
+IsLeftBorderBouncy : 0
+IsRightBorderBouncy : 1
+IsTopBorderBouncy : 0
+IsBottomBorderBouncy : 0

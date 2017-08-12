@@ -31,6 +31,8 @@ void ConsoleIO::Write(std::string & str)
 	RefreshConsole();
 }
 
+
+
 ConsoleIO::ConsoleIO() :
 	Console(initscr()),
 	ConsoleHasBeenClosed(false),
@@ -40,7 +42,7 @@ ConsoleIO::ConsoleIO() :
 	resize_term(ConsoleY, ConsoleX);
 
 	noecho();
-	curs_set(false);
+	curs_set(true);
 
 	keypad(Console, true);
 	nodelay(stdscr, true);
@@ -56,7 +58,7 @@ ConsoleIO::~ConsoleIO()
 	
 	InputTh.join();
 
-	endwin();
+	//endwin();
 }
 
 void ConsoleIO::RefreshConsole()
@@ -75,21 +77,26 @@ void ConsoleIO::WriteInputBuffer()
 {
 	mvaddstr(ConsoleY - 1, 0, ">> ");
 	mvaddnstr(ConsoleY -1, ConsoleInputOffset, InputBuffer.c_str(), ConsoleX);
+	move(ConsoleY - 1, InputBuffer.size() + ConsoleInputOffset);
 }
+
 
 void ConsoleIO::StartInputThread()
 {
 	InputTh = std::move(std::thread{
 		[&] {
-		while (!ConsoleHasBeenClosed.load())
+		bool CloseFlag = false;
+		while (!CloseFlag)
 		{
-			Lock.lock();
+			std::unique_lock<std::mutex> _lock(Lock);
+
+			CloseFlag = ConsoleHasBeenClosed.load();
 
 			int Input = getch();
 
 			if (Input == ERR)
 			{
-				Lock.unlock();
+				_lock.unlock();
 				sf::sleep(sf::milliseconds(1));
 				continue;
 			}
@@ -122,7 +129,7 @@ void ConsoleIO::StartInputThread()
 
 			RefreshConsole();
 
-			Lock.unlock();
+			
 		}
 	} });
 }

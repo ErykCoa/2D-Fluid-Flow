@@ -1,0 +1,9 @@
+Print "To jest przyklad obrazujacy sposob dystrybucji nowych czasteczek."
+Print "Jest to rozklad normalny o srodku w centrum spawnera."
+Print "Pozycje czasteczek wykraczajace ponad granice spawnera sa przycinane do tych granic."
+Print "Sprawdzana jest tez kolizja z obiektami na mapie. W jej przypadku losowana jest nowa pozycja."
+FPS
+ParticlesCount
+AddSpawner "1,20,0,50,50,100,100"
+PerSec 5
+Step -e

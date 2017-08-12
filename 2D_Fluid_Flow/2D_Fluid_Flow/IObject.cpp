@@ -1,5 +1,15 @@
 #include "IObject.h"
 
+void IObject::Visability(VisabilityType SetTo)
+{
+	CurrentVisability = SetTo;
+}
+
+bool IObject::IsAt(sf::Vector2u Coordinates)
+{
+	return Sprite.getGlobalBounds().contains(static_cast<sf::Vector2f>(Coordinates));
+}
+
 void IObject::UpdateHitBox()
 {
 	const auto HitBoxX = HitBox.getSize().x;
@@ -16,7 +26,7 @@ void IObject::UpdateHitBox()
 	{
 		auto Number = std::distance(Begin, Iter);
 
-		sf::Vector2u Index{ Number % HitBoxX , Number / HitBoxX };
+		sf::Vector2u Index{ static_cast<unsigned>(Number % HitBoxX) ,  static_cast<unsigned>(Number / HitBoxX) };
 
 		auto Pixel = (sf::Uint8*)Iter;
 
@@ -51,6 +61,8 @@ void IObject::LoadSpritePosition(const std::string & Path)
 {
 	auto Info = stde::LoadDictionary<float>(Path + "/Info.txt");
 
-	Sprite.setPosition(stde::GetValue(Info, "PositionX"), stde::GetValue(Info, "PositionY"));
+	AbsolutePosition = { stde::GetValue(Info, "PositionX"), stde::GetValue(Info, "PositionY") };
+
+	Sprite.setPosition(AbsolutePosition);
 
 }

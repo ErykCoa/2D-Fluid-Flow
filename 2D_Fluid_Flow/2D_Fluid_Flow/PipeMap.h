@@ -14,39 +14,67 @@
 #include "FluidVelocityMap.h"
 #include "Settings.h"
 #include "TextCommands.h"
+#include <memory.h>
+#include <future>
+#include <atomic>
+#include "TimeCounter.h"
+#include "WindowViewChanger.h"
+#include "IObserver.h"
 
-class PipeMap
+
+class PipeMap : public IObserver<sf::Event>
 {
 public:
+	static std::unique_ptr<PipeMap> GetPipeMapFromUserInput();
+
+	PipeMapState GetMapState();
+
+	void StartSimulation();
+
 	void SingleTick();
-	bool WindowHasBeenClosed();
+
+	virtual void Update(sf::Event & State) override;
+	
 
 	PipeMap(const std::string & Path);
 	~PipeMap();
 private:
 	sf::RenderWindow Window;
 
+	
 	void Draw();
 	void MovementTick();
+	bool WindowHasBeenClosed();
 
 	void LoadBackground(const std::string & File);
 	void LoadObject(const std::string & Path);
-	void LoadAllObjects(const std::string & Path);
+	void LoadAllObjects();
 	void SetFlowInitialSpeed(sf::Vector2f Speed);
+	void ExecuteInitScript();
 
 	Settings WinSettings;
 	FluidVelocityMap Map;
 	TextCommands CommandsProcessing;
 
-	float UnitsSinceLastRender;
+	float TimeUnitsSinceLastRender;
 
 	sf::Sprite Background;
 
-	std::vector<std::unique_ptr<IObject>> Objects;
+	std::mutex SwapMutex;
+	std::unique_ptr<sf::RenderTexture> LastFrame;
+	std::unique_ptr<sf::RenderTexture> FrameBuffer;
 
 	ResourceHolder<sf::Texture, ID> Textures;
 
+	std::thread Render;
+
+	TimeCounter TimePerTick;
+
 	void UpdateMap();
 	void ObjectsMovement();
+
+	friend void th(PipeMap*);
+
+
 };
 

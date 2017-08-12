@@ -1,0 +1,10 @@
+Print "To jest przyklad obrazujacy odbicie czasteczek od twardych powierzchni."
+Print "Przy takim odbiciu czasteczka traci polowe swojej szybkosci."
+Print "Ma to na celu emulacje tarcia i energii wlozonej w mechaniczne przeksztalcenie ciala."
+Print "Mozliwe jest tez ustalenie odbicia od wybranych scian (w przykladzie prawa krawedz mapy)."
+FPS
+ParticlesCount
+AddSpawner "1,20,0,80,200,20,5"
+AddSpawner "2,-20,2,200,20,10,5"
+PerSec 5
+Step -e

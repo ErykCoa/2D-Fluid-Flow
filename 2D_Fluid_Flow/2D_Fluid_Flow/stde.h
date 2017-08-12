@@ -8,6 +8,7 @@
 #include <fstream>
 #include "Consts.h"
 #include "StructsAndEnums.h"
+#include <string>
 
 namespace stde
 {
@@ -16,17 +17,24 @@ namespace stde
 	{
 		std::array<std::future<int>, NumberOfThreads> handle;
 
-		auto Length = std::distance(Begin, End) / NumberOfThreads;
+		auto Lenght = std::distance(Begin, End);
 
 		for (unsigned Index = 0; Index < NumberOfThreads; ++Index)
 		{
 			handle[Index] = std::async([&](unsigned Number) {
 
-				auto LocalBegin = Begin + std::distance(Begin, End) * Number / NumberOfThreads;
 
-				for (auto Iter = LocalBegin; std::distance(LocalBegin, Iter) < Length; ++Iter)
+				for (auto Iter = Begin + Number; std::distance(Begin, Iter) < Lenght; )
 				{
 					Function(Iter);
+#ifdef NDEBUG
+					Iter += NumberOfThreads;
+#else
+					for (int i = 0; i < NumberOfThreads && std::distance(Begin, Iter) < Lenght; ++i)
+					{
+						++Iter;
+					}
+#endif
 				}
 				return 0;
 
@@ -125,6 +133,28 @@ namespace stde
 		return std::move(Res);
 	}
 
+	template<class T = std::string>
+	std::vector<T> LoadLines(const std::string & FromFile)
+	{
+		std::vector<T> Res;
+
+		std::ifstream Input{ FromFile };
+		if (Input.is_open())
+		{
+			while (!Input.eof())
+			{
+				T Str;
+				std::getline(Input, Str);
+				Res.push_back(std::move(Str));
+			}
+			Input.close();
+		}
+		else
+			throw std::runtime_error("Failed to open file: " + FromFile);
+
+		return std::move(Res);
+	}
+
 	template<class T>
 	T GetValue(std::map<std::string, T> & From, std::string & Key)
 	{
@@ -149,35 +179,55 @@ namespace stde
 		}
 	}
 
+	template<class T>
+	class CompereAddresses {
+	public:
+		inline bool operator()(T a, T b) const
+		{
+			return std::addressof(a.get()) < std::addressof(b.get());
+		}
+	};
+
+
+	template<class T>
+	std::vector<std::basic_string<T>> Tokenize(std::basic_string<T> & What, T With = ',')
+	{
+		std::vector<std::basic_string<T>> Res;
+		size_t Pos = 0;
+		size_t NextPos = What.find_first_of(',', Pos);
+
+		if (NextPos != std::basic_string<T>::npos)
+			while (NextPos != std::basic_string<T>::npos)
+			{
+				Res.push_back(What.substr(Pos, (NextPos = What.find_first_of(',', Pos)) - Pos));
+				if (NextPos != std::basic_string<T>::npos)
+					Pos = NextPos + 1;
+			}
+		else
+			Res.push_back(What.substr(Pos));
+
+		return Res;
+	}
 }
 
 
 /*
-namespace stde
-{
 template<unsigned NumberOfThreads, class Function, class Iterator>
-int For_each(Iterator Begin, Iterator End, Function Function)
+int For_each(Iterator Begin, Iterator End, Function Function, unsigned IncrementIteratorBy = 1)
 {
 std::array<std::future<int>, NumberOfThreads> handle;
 
-auto Lenght = std::distance(Begin, End);
+auto Length = std::distance(Begin, End) / NumberOfThreads;
 
 for (unsigned Index = 0; Index < NumberOfThreads; ++Index)
 {
 handle[Index] = std::async([&](unsigned Number) {
 
+auto LocalBegin = Begin + std::distance(Begin, End) * Number / NumberOfThreads;
 
-for (auto Iter = Begin * ((NumberOfThreads - Number) / NumberOfThreads); std::distance(Begin, Iter) < Lenght; )
+for (auto Iter = LocalBegin; std::distance(LocalBegin, Iter) < Length; Iter += IncrementIteratorBy)
 {
 Function(Iter);
-#ifdef NDEBUG
-Iter += NumberOfThreads;
-#else
-for (int i = 0; i < NumberOfThreads && std::distance(Begin, Iter) < Lenght; ++i)
-{
-++Iter;
-}
-#endif
 }
 return 0;
 
@@ -189,6 +239,11 @@ std::accumulate(handle.begin(), handle.end(), 0, [&](int a, std::future<int> & b
 return a + b.get();
 });
 }
+
+
+namespace stde
+{
+
 }
 
 

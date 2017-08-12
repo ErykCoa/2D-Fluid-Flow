@@ -9,18 +9,30 @@
 int main()
 {
 	try {
-		std::unique_ptr<PipeMap> Map{ new PipeMap("example") };
+		std::unique_ptr<PipeMap> Map{ nullptr };
 
-		while (!Map->WindowHasBeenClosed())
-		{
-			Map->SingleTick();
-		}
+		do {
+			Map.reset(nullptr);
 
+			Map = PipeMap::GetPipeMapFromUserInput();
 
-		return 0;
+			if (Map != nullptr)
+			{
+				Map->StartSimulation();
+
+				while (Map->GetMapState() == PipeMapState::Running)
+				{
+					Map->SingleTick();
+				}
+			}
+
+		} while (Map != nullptr);
 	}
 	catch (std::exception & E)
 	{
 		std::cerr << std::endl << E.what();
 	}
+
+
+	return 0;
 }

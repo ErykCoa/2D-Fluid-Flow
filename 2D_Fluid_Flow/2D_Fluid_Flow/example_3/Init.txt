@@ -1,0 +1,7 @@
+Print "To jest przyklad obrazujacy sposob rozchodzenia sie czasteczek w przestrzeni przy srednim cisnieniu."
+Print "\"Rozstrzal\" czasteczek wynika wylacznie z sil panujacych miedzy nimi."
+FPS
+ParticlesCount
+AddSpawner "1,20,0,100,295,40,10"
+PerSec 1000
+Step -e

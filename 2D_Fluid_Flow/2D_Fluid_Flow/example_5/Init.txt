@@ -1,0 +1,8 @@
+Print "To jest przyklad obrazujacy rozchodzenie sie czasteczek w przestrzeni."
+FPS
+ParticlesCount
+AddSpawner "1,0,0,50,80,50,50"
+AddSpawner "1,0,0,280,50,50,50"
+AddSpawner "1,0,0,250,320,50,50"
+PerSec 2000
+Step -e

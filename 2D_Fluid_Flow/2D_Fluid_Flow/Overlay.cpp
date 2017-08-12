@@ -1,14 +1,17 @@
 #include "Overlay.h"
 
-void Overlay::UpdateAndDraw(sf::RenderWindow & Window)
+void Overlay::UpdateAndDraw(sf::RenderTarget & Window)
 {
 	Update();
 	Draw(Window);
 }
 
-void Overlay::Draw(sf::RenderWindow & Window)
+void Overlay::Draw(sf::RenderTarget & Window)
 {
-	Text.setScale(Info.Scale);
+	//Text.setScale(Info.Scale);
+	for (auto & Item : AdditionalDrawableItems)
+		Window.draw(Item);
+
 	Window.draw(Text);
 }
 
@@ -34,6 +37,11 @@ void Overlay::Update()
 	}
 
 	Text.setString(Content);
+
+	sf::FloatRect ViewInfo = View.GetViewInfo();
+
+	Text.setScale( sf::Vector2f{1.f,1.f} * static_cast<float>(ViewInfo.width / (Info.MapX * Info.Scale.x )));
+	Text.setPosition(ViewInfo.left, ViewInfo.top);
 }
 
 void Overlay::AddItem(std::string Name, std::function<std::string()> Func)
@@ -44,6 +52,19 @@ void Overlay::AddItem(std::string Name, std::function<std::string()> Func)
 void Overlay::RemoveItem(std::string Name)
 {
 	UIElements.erase(Name);
+}
+
+void Overlay::AddDrawableItem(sf::Drawable & Item)
+{
+	AdditionalDrawableItems.insert(Item);
+}
+
+void Overlay::RemoveDrawableItem(sf::Drawable & Item)
+{
+	if (AdditionalDrawableItems.find(Item) == AdditionalDrawableItems.end())
+		throw std::logic_error("AdditionalDrawableItems does not contain the Item!");
+
+	AdditionalDrawableItems.erase(Item);
 }
 
 void Overlay::SetVisability(bool Visible)
@@ -76,9 +97,10 @@ void Overlay::ChangeFontStyle(sf::Text::Style Style)
 	Text.setStyle(Text.getStyle() ^ Style);
 }
 
-Overlay::Overlay(WindowInfo & Info) :
+Overlay::Overlay(WindowInfo & Info, WindowViewChanger & View) :
 Info(Info),
-Visible(true)
+Visible(true),
+View{View}
 {
 	if (!Font.loadFromFile("Fonts/LiberationMono-Bold.ttf"))
 		throw std::runtime_error("Failed to open file: Fonts/LiberationMono-Bold.ttf");

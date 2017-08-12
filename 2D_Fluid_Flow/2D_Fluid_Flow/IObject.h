@@ -7,7 +7,7 @@
 #include "stde.h"
 #include "Consts.h"
 #include <mutex>
-#include "Settings.h"
+#include "WindowInfo.h"
 
 class IObject
 {
@@ -16,13 +16,19 @@ public:
 
 	virtual bool IsStatic() = 0;
 	virtual void Move() = 0;
-	virtual void Draw(sf::RenderWindow & Window) = 0;
+	virtual void Draw(sf::RenderTarget & Window) = 0;
+	virtual void DeleteAllReferences() {}
+	virtual void Visability(VisabilityType SetTo);
+	virtual bool IsAt(sf::Vector2u Coordinates);
 	virtual ~IObject() {};
 
-	IObject(Settings & WinSettings) : Texture(new sf::Texture), WinSettings( WinSettings ) {}
+	IObject(WindowInfo & Info) : Info{ Info }, Texture(new sf::Texture), CurrentVisability(VisabilityType::Default), OccupiedFields(Info.MapX){}
 
 protected:
-	Settings & WinSettings;
+	WindowInfo & Info;
+
+	sf::Vector2f AbsolutePosition;
+	VisabilityType CurrentVisability;
 
 	sf::Sprite Sprite;
 	std::unique_ptr<sf::Texture> Texture;

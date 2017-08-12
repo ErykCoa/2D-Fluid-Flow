@@ -1,6 +1,6 @@
 #include "Particle.h"
 
-std::default_random_engine Particle::Engine{};
+//std::default_random_engine Particle::Engine{};
 
 void Particle::Collide(Particle & Particle)
 {
@@ -46,23 +46,26 @@ void Particle::Collide(std::vector<std::vector<bool>> & IsFieldOccupied)
 
 void Particle::CollideWithBorders()
 {
-	if (Position.x - WinSettings.ParticleRadius < 0)
+	if (WinSettings.Info.LeftBorder == BorderType::Bouncy && Position.x - WinSettings.ParticleRadius < 0)
 	{
-		if (NextVelocity.x < 0)
+		if (NextVelocity.x < 0.f)
 			NextVelocity.x *= -1;
 	}
-	else if (Position.x + WinSettings.ParticleRadius > WinSettings.Info.MapX)
+	else if (WinSettings.Info.RightBorder == BorderType::Bouncy && Position.x + WinSettings.ParticleRadius > WinSettings.Info.MapX)
 	{
-
+		if (NextVelocity.x > 0.f)
+			NextVelocity.x *= -1;
 	}
 
-	if (Position.y - WinSettings.ParticleRadius < 0)
+	if (WinSettings.Info.TopBorder == BorderType::Bouncy && Position.y - WinSettings.ParticleRadius < 0)
 	{
-
+		if (NextVelocity.y < 0.f)
+			NextVelocity.y *= -1;
 	}
-	else if (Position.y + WinSettings.ParticleRadius > WinSettings.Info.MapY)
+	else if (WinSettings.Info.BottomBorder == BorderType::Bouncy && Position.y + WinSettings.ParticleRadius > WinSettings.Info.MapY)
 	{
-
+		if (NextVelocity.y > 0.f)
+			NextVelocity.y *= -1;
 	}
 }
 
@@ -91,11 +94,11 @@ void Particle::Move()
 
 }
 
-void Particle::Draw(sf::RenderWindow & Window)
+void Particle::Draw(sf::RenderTarget & Window)
 {
 	UpdateCircle(WinSettings.Info.Scale, WinSettings.Contrast);
 
-	Window.draw(Circle);
+	//Window.draw(Circle);
 }
 
 bool Particle::HasLeftMap()
@@ -119,10 +122,12 @@ Particle::Particle(Settings & WinSettings, sf::Vector2f StartingPosition, sf::Ve
 	NextPosition(StartingPosition),
 	WinSettings(WinSettings)
 {
-	Circle = sf::CircleShape(WinSettings.ParticleRadius);
+	//Circle = sf::CircleShape(WinSettings.ParticleRadius);
 }
 
-Particle::Particle(Settings & WinSettings, 
+
+
+/*Particle::Particle(Settings & WinSettings, 
 	sf::Vector2f StartingPosition, Boundaries<float>& PositionBoun, std::normal_distribution<float>& PositionDis, 
 	sf::Vector2f StartingVolacity, Boundaries<float>& VolacityBoun, std::normal_distribution<float>& VolacityDis) :
 	WinSettings{ WinSettings }
@@ -133,28 +138,24 @@ Particle::Particle(Settings & WinSettings,
 	 Velocity = NextVelocity = stde::Trim(sf::Vector2f{ StartingVolacity.x + VolacityDis(Engine), StartingVolacity.y + VolacityDis(Engine) }, VolacityBoun);
 
 	Circle = sf::CircleShape(WinSettings.ParticleRadius);
-}
+}*/
 
-
-Particle::~Particle()
-{
-}
 
 void Particle::UpdateCircle(sf::Vector2f Scale, float Contrast)
 {
 	unsigned tmp = (fabs(Velocity.x) + fabs(Velocity.y))*Contrast;
 	tmp = tmp >= 255 ? 255 : tmp;
 
-	Circle.setFillColor(sf::Color(
+	/*Circle.setFillColor(sf::Color(
 		tmp,
 		0,
 		255 - tmp
 		)
-	);
+	);*/
 
-	Circle.setPosition((Position - sf::Vector2f(WinSettings.ParticleRadius, WinSettings.ParticleRadius)) * Scale.x);
+	//Circle.setPosition((Position - sf::Vector2f(WinSettings.ParticleRadius, WinSettings.ParticleRadius)) * Scale.x);
 
-	Circle.setScale(Scale);
+//	Circle.setScale(Scale);
 
 }
 
@@ -172,7 +173,7 @@ inline void Particle::SolidColision(sf::Vector2f & With)
 
 	auto res = rotation.transformPoint(rotation.transformPoint(NextVelocity));
 
-	NextVelocity = res;
+	NextVelocity = res / 2.f;
 
 
 
